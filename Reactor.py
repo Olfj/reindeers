@@ -9,7 +9,8 @@ class PWR:
     BASE_TEMPERATURE = 548
     FLOW = 1 / 10
     REACTION_PROB = 0.85
-    CONTROL_ROD_ABSORB = 0.02
+    CONTROL_ROD_ABSORB = 0.01
+    CONTROL_ROD_INSERTION_RATE = 1.005
 
     def __init__(self, n, dim, n_neutrons, speed, n_blocks=10):
         ''' n_neutrons: number of initial neutrons '''
@@ -28,7 +29,8 @@ class PWR:
         self.reaction_prob = self.REACTION_PROB
         self.temperature = self.BASE_TEMPERATURE
         self.volume = 10e-10
-        self.old_neutrons = n_neutrons 
+        self.old_neutrons = n_neutrons
+        self.control_rod_absorb = self.CONTROL_ROD_ABSORB 
 
     def init_atom_table(self):
         atom_table = {}
@@ -53,13 +55,14 @@ class PWR:
         self.adjust_temperature(energy)
         self.adjust_reaction_prob()
         self.absorb()
+        self.adjust_reactivity()
 
     def plot(self, i):
         lim = (0, self.dim)
         atoms = self.atoms[np.nonzero(self.collided == 0)[0]]
         self.plotter.scatter(self.atoms[:,0], self.atoms[:,1], lim, lim, c=0)
         self.plotter.scatter(self.neutrons[:,0], self.neutrons[:,1], lim, lim, redraw=False, s=10, c=1)
-        self.plotter.show_stats(f"Generation: {i+1}, temperature: {self.temperature:.4f}, reactivity: {len(self.neutrons) / self.old_neutrons:.4f}")
+        self.plotter.show_stats(f"Generation: {i+1}, temperature: {self.temperature:.4f}, reactivity: {self.get_reactivity():.4f}")
 
     def move_neutrons(self):
         '''Move all neutrons'''
@@ -92,7 +95,7 @@ class PWR:
     def absorb(self):
         '''Control rod absorbtion'''
         mask = np.random.rand(len(self.neutrons))
-        mask = np.nonzero(mask < self.CONTROL_ROD_ABSORB)[0]
+        mask = np.nonzero(mask < self.control_rod_absorb)[0]
         self.neutrons = np.delete(self.neutrons, mask, axis=0)
         self.directions = np.delete(self.directions, mask)
 
@@ -105,6 +108,15 @@ class PWR:
 
     def adjust_reaction_prob(self):
         self.reaction_prob = self.REACTION_PROB * self.BASE_TEMPERATURE / self.temperature
+
+    def adjust_reactivity(self):
+        self.control_rod_absorb = min(self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE, 0.02272)
+
+    def get_reactivity(self):
+        if self.old_neutrons == 0:
+            return 0
+        else:
+            return len(self.neutrons) / self.old_neutrons
 
 if __name__ ==  "__main__":
     n = 100
