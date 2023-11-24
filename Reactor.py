@@ -10,19 +10,20 @@ class PWR:
     FLOW = 1 / 10
     REACTION_PROB = 0.85
     CONTROL_ROD_ABSORB = 0.01
-    CONTROL_ROD_INSERTION_RATE = 1.005
+    CONTROL_ROD_INSERTION_RATE = 1.0015
+    
 
-    def __init__(self, n, dim, n_neutrons, speed, n_blocks=10):
+    def __init__(self, n, dim, n_neutrons, speed,rng, n_blocks=10):
         ''' n_neutrons: number of initial neutrons '''
         self.radius = 0.75
         self.n = n
         self.dim = dim
         self.speed = speed
         self.block_size = int(dim/n_blocks)
-        self.atoms = np.random.uniform(0, self.dim, size=(self.n, 2))
+        self.atoms = rng.uniform(0, self.dim, size=(self.n, 2))
         self.collided  = np.zeros((self.n))
-        self.neutrons = np.random.uniform(0, self.dim, size=(n_neutrons, 2))
-        self.directions = np.random.uniform(-np.pi, np.pi, size=n_neutrons)
+        self.neutrons = rng.uniform(0, self.dim, size=(n_neutrons, 2))
+        self.directions = rng.uniform(-np.pi, np.pi, size=n_neutrons)
         colors = "green blue".split()
         self.plotter = Plotter(custom=colors)
         self.atom_table = self.init_atom_table()
@@ -123,6 +124,7 @@ if __name__ ==  "__main__":
     dim = 100
     n_initial_neutrons = 200
     speed = 1
-    pwr = PWR(n, dim, n_initial_neutrons, speed)
+    rng = np.random.default_rng(seed=42)
+    pwr = PWR(n, dim, n_initial_neutrons, speed, rng)
     anim = Animator(pwr.update, interval=25)
     anim.animate()
