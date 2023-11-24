@@ -8,8 +8,8 @@ class PWR:
     HEAT_CAPACITY = 4.186
     BASE_TEMPERATURE = 548
     FLOW = 1 / 10
-    REACTIVITY = 0.85
-    CONTROL_ROD_ABSORB = 0.0225
+    REACTION_PROB = 0.85
+    CONTROL_ROD_ABSORB = 0.02
 
     def __init__(self, n, dim, n_neutrons, speed, n_blocks=10):
         ''' n_neutrons: number of initial neutrons '''
@@ -25,9 +25,10 @@ class PWR:
         colors = "green blue".split()
         self.plotter = Plotter(custom=colors)
         self.atom_table = self.init_atom_table()
-        self.reactivity = self.REACTIVITY
+        self.reaction_prob = self.REACTION_PROB
         self.temperature = self.BASE_TEMPERATURE
         self.volume = 10e-10
+        self.old_neutrons = n_neutrons 
 
     def init_atom_table(self):
         atom_table = {}
@@ -50,7 +51,7 @@ class PWR:
         self.move_neutrons()
         energy = self.collide()
         self.adjust_temperature(energy)
-        self.adjust_reactivity()
+        self.adjust_reaction_prob()
         self.absorb()
 
     def plot(self, i):
@@ -58,7 +59,7 @@ class PWR:
         atoms = self.atoms[np.nonzero(self.collided == 0)[0]]
         self.plotter.scatter(self.atoms[:,0], self.atoms[:,1], lim, lim, c=0)
         self.plotter.scatter(self.neutrons[:,0], self.neutrons[:,1], lim, lim, redraw=False, s=10, c=1)
-        self.plotter.show_stats(f"Generation: {i+1}, temperature: {self.temperature:.4f}, reactivity: {self.reactivity:.4f}")
+        self.plotter.show_stats(f"Generation: {i+1}, temperature: {self.temperature:.4f}, reactivity: {len(self.neutrons) / self.old_neutrons:.4f}")
 
     def move_neutrons(self):
         '''Move all neutrons'''
@@ -66,6 +67,7 @@ class PWR:
 
     def collide(self):
         '''Collision detection'''
+        self.old_neutrons = len(self.neutrons)
         new_positions = self.neutrons.copy()
         new_directions = self.directions.copy()
         energy = 0
@@ -73,7 +75,7 @@ class PWR:
             collidable = self.get_collidable(neutron)
             for index in collidable:
                 if np.linalg.norm(self.atoms[index] - neutron) < self.radius:# and self.collided[index] == 0:
-                    if np.random.rand() < self.reactivity:
+                    if np.random.rand() < self.reaction_prob:
                         dirs = np.random.uniform(-np.pi, np.pi, 2)
                         poss = np.full((2,2), self.atoms[index]) + 1.1*self.radius*np.array([np.cos(dirs), np.sin(dirs)]).T
                         new_directions = np.append(new_directions, dirs)
@@ -101,8 +103,8 @@ class PWR:
         temp = self.temperature + energy / (self.HEAT_CAPACITY * self.volume)
         self.temperature = (v_current * temp + v_in * self.BASE_TEMPERATURE) / self.volume
 
-    def adjust_reactivity(self):
-        self.reactivity = self.REACTIVITY * self.BASE_TEMPERATURE / self.temperature
+    def adjust_reaction_prob(self):
+        self.reaction_prob = self.REACTION_PROB * self.BASE_TEMPERATURE / self.temperature
 
 if __name__ ==  "__main__":
     n = 100
