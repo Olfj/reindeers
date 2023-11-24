@@ -11,9 +11,8 @@ class PWR:
     REACTION_PROB = 0.85
     CONTROL_ROD_ABSORB = 0.01
     CONTROL_ROD_INSERTION_RATE = 1.0015
-    
 
-    def __init__(self, n, dim, n_neutrons, speed,rng, n_blocks=10):
+    def __init__(self, n, dim, n_neutrons, speed, rng, n_blocks=10):
         ''' n_neutrons: number of initial neutrons '''
         self.radius = 0.75
         self.n = n
