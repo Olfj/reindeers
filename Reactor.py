@@ -4,15 +4,16 @@ from Animator import Animator, Plotter
 
 class PWR:
 
-    COLLISION_ENERGY = 200 * 1.602 * 10e-19
+    COLLISION_ENERGY = 200 * 1.602 * 10e-13
     HEAT_CAPACITY = 4.186
     BASE_TEMPERATURE = 548
     FLOW = 1 / 10
     REACTIVITY = 0.85
+    CONTROL_ROD_ABSORB = 0.0225
 
     def __init__(self, n, dim, n_neutrons, speed, n_blocks=10):
         ''' n_neutrons: number of initial neutrons '''
-        self.radius = 1
+        self.radius = 0.75
         self.n = n
         self.dim = dim
         self.speed = speed
@@ -26,7 +27,7 @@ class PWR:
         self.atom_table = self.init_atom_table()
         self.reactivity = self.REACTIVITY
         self.temperature = self.BASE_TEMPERATURE
-        self.volume = 10e-16
+        self.volume = 10e-10
 
     def init_atom_table(self):
         atom_table = {}
@@ -89,7 +90,7 @@ class PWR:
     def absorb(self):
         '''Control rod absorbtion'''
         mask = np.random.rand(len(self.neutrons))
-        mask = np.nonzero(mask < 0.03)[0]
+        mask = np.nonzero(mask < self.CONTROL_ROD_ABSORB)[0]
         self.neutrons = np.delete(self.neutrons, mask, axis=0)
         self.directions = np.delete(self.directions, mask)
 
@@ -106,7 +107,7 @@ class PWR:
 if __name__ ==  "__main__":
     n = 100
     dim = 100
-    n_initial_neutrons = 20
+    n_initial_neutrons = 200
     speed = 1
     pwr = PWR(n, dim, n_initial_neutrons, speed)
     anim = Animator(pwr.update, interval=25)
