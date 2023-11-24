@@ -80,7 +80,7 @@ class PWR:
         for i, neutron in enumerate(self.neutrons):
             collidable = self.get_collidable(neutron)
             for index in collidable:
-                if np.linalg.norm(self.atoms[index] - neutron) < self.radius:# and self.collided[index] == 0:
+                if self.norm(self.atoms[index] - neutron) < self.radius:# and self.collided[index] == 0:
                     if np.random.rand() < self.reaction_prob:
                         dirs = np.random.uniform(-np.pi, np.pi, 2)
                         poss = np.full((2,2), self.atoms[index]) + 1.1*self.radius*np.array([np.cos(dirs), np.sin(dirs)]).T
@@ -123,6 +123,10 @@ class PWR:
             return 0
         else:
             return len(self.neutrons) / self.old_neutrons
+        
+    def norm(self, u):
+        '''Length of a vector'''
+        return np.sum(np.sqrt(u * u))
 
 if __name__ ==  "__main__":
     n = 100
