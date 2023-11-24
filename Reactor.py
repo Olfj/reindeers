@@ -33,6 +33,7 @@ class PWR:
         self.control_rod_absorb = self.CONTROL_ROD_ABSORB 
 
     def init_atom_table(self):
+        '''Partitions the world. Used to store atoms'''
         atom_table = {}
         hashed_positions = np.floor(self.atoms/self.block_size).astype(int)
         for index, position in enumerate(hashed_positions):
@@ -45,19 +46,21 @@ class PWR:
         return atom_table
     
     def get_collidable(self, position):
+        '''Returns a list of atoms that are possible collision prospects'''
         collidable = self.atom_table.get(tuple(np.floor(position/self.block_size).astype(int)))
         return collidable if collidable else []
 
     def update(self, i):
         self.plot(i)
+        self.absorb()
         self.move_neutrons()
         energy = self.collide()
         self.adjust_temperature(energy)
         self.adjust_reaction_prob()
-        self.absorb()
-        self.adjust_reactivity()
+        self.adjust_control_rods()
 
     def plot(self, i):
+        '''Plots the neutrons and atoms'''
         lim = (0, self.dim)
         atoms = self.atoms[np.nonzero(self.collided == 0)[0]]
         self.plotter.scatter(self.atoms[:,0], self.atoms[:,1], lim, lim, c=0)
@@ -107,12 +110,15 @@ class PWR:
         self.temperature = (v_current * temp + v_in * self.BASE_TEMPERATURE) / self.volume
 
     def adjust_reaction_prob(self):
+        '''Adjusts the probability of fission as a function of water temperature'''
         self.reaction_prob = self.REACTION_PROB * self.BASE_TEMPERATURE / self.temperature
 
-    def adjust_reactivity(self):
+    def adjust_control_rods(self):
+        '''Increases likelihood of absorbtion by moving control rods a little'''
         self.control_rod_absorb = min(self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE, 0.02272)
 
     def get_reactivity(self):
+        '''Returns the reactivity'''
         if self.old_neutrons == 0:
             return 0
         else:
