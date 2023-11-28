@@ -126,7 +126,7 @@ class PWR:
         
     def norm(self, u):
         '''Length of a vector'''
-        return np.sum(np.sqrt(u * u))
+        return np.sum(np.sqrt(u.dot(u)))
 
 if __name__ ==  "__main__":
     n = 100
