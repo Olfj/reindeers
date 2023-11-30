@@ -3,11 +3,6 @@ import numpy as np
 from Reactor import PWR
 from tqdm import tqdm
 
-# # Generate some sample data
-# x = np.linspace(0, 10, 100)
-# y1 = np.sin(x)
-# y2 = 2 * np.cos(x)
-
 def moving_average(x, w=50):
     return np.convolve(x, np.ones(w), 'valid') / w
 
