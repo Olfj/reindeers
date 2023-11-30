@@ -4,9 +4,10 @@ from Animator import Animator, Plotter
 class PWR:
 
     COLLISION_ENERGY = 200 * 1.602 * 10e-13
-    HEAT_CAPACITY = 4.186
+    HEAT_CAPACITY = 4.184
     BASE_TEMPERATURE = 548
-    FLOW = 1 / 10
+    FLOW = 4.97 * 10e-13
+    VOLUME =  59.47 * 10e-13
     REACTION_PROB = 0.85
     CONTROL_ROD_ABSORB = 0.01
     CONTROL_ROD_INSERTION_RATE = 1.0015
@@ -27,7 +28,6 @@ class PWR:
         self.atom_table = self.init_atom_table()
         self.reaction_prob = self.REACTION_PROB
         self.temperature = self.BASE_TEMPERATURE
-        self.volume = 10e-10
         self.n_old_neutrons = n_neutrons
         self.control_rod_absorb = self.CONTROL_ROD_ABSORB 
 
@@ -52,12 +52,14 @@ class PWR:
 
     def update(self, i):
         self.plot(i)
+        self.n_old_neutrons = len(self.neutrons)
         self.absorb()
         self.move_neutrons()
         energy = self.collide()
         self.adjust_temperature(energy)
         self.adjust_reaction_prob()
         self.adjust_control_rods()
+
 
     def plot(self, i):
         '''Plots the neutrons and atoms'''
@@ -75,7 +77,6 @@ class PWR:
 
     def collide(self):
         '''Collision detection'''
-        self.n_old_neutrons = len(self.neutrons)
         new_positions = self.neutrons.copy()
         new_directions = self.directions.copy()
         energy = 0
@@ -107,10 +108,8 @@ class PWR:
 
     def adjust_temperature(self, energy):
         ''''Change in water temperature as a function of fission and flow'''
-        v_current = self.volume * (1 - self.FLOW)
-        v_in = self.volume * self.FLOW
-        temp = self.temperature + energy / (self.HEAT_CAPACITY * self.volume)
-        self.temperature = (v_current * temp + v_in * self.BASE_TEMPERATURE) / self.volume
+        self.temperature = self.BASE_TEMPERATURE + energy / (self.HEAT_CAPACITY * (self.VOLUME - self.FLOW))
+        #self.temperature = (self.VOLUME * temp + self.FLOW * self.BASE_TEMPERATURE) / self.VOLUME
 
     def adjust_reaction_prob(self):
         '''Adjusts the probability of fission as a function of water temperature'''
@@ -119,7 +118,7 @@ class PWR:
     def adjust_control_rods(self):
         '''Increases likelihood of absorbtion by moving control rods a little'''
         insertion = self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE
-        self.control_rod_absorb = min(insertion, 0.02272)
+        self.control_rod_absorb = min(insertion, 0.023)#0.02272)
 
     def get_reactivity(self):
         '''Returns the reactivity'''
