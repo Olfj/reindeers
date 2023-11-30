@@ -1,5 +1,4 @@
 import numpy as np
-from tqdm import tqdm
 from Animator import Animator, Plotter
 
 class PWR:
@@ -18,18 +17,18 @@ class PWR:
         self.n = n
         self.dim = dim
         self.speed = speed
-        self.block_size = int(dim/n_blocks)
+        self.block_size = int(dim / n_blocks)
         self.atoms = rng.uniform(0, self.dim, size=(self.n, 2))
         self.collided  = np.zeros((self.n))
         self.neutrons = rng.uniform(0, self.dim, size=(n_neutrons, 2))
-        self.directions = rng.uniform(-np.pi, np.pi, size=n_neutrons)
+        self.directions = rng.uniform(0, 2*np.pi, size=n_neutrons)
         colors = "green blue".split()
         self.plotter = Plotter(custom=colors)
         self.atom_table = self.init_atom_table()
         self.reaction_prob = self.REACTION_PROB
         self.temperature = self.BASE_TEMPERATURE
         self.volume = 10e-10
-        self.old_neutrons = n_neutrons
+        self.n_old_neutrons = n_neutrons
         self.control_rod_absorb = self.CONTROL_ROD_ABSORB 
 
     def init_atom_table(self):
@@ -47,7 +46,8 @@ class PWR:
     
     def get_collidable(self, position):
         '''Returns a list of atoms that are possible collision prospects'''
-        collidable = self.atom_table.get(tuple(np.floor(position/self.block_size).astype(int)))
+        floored_pos = tuple(np.floor(position / self.block_size).astype(int))
+        collidable = self.atom_table.get(floored_pos)
         return collidable if collidable else []
 
     def update(self, i):
@@ -65,40 +65,43 @@ class PWR:
         atoms = self.atoms[np.nonzero(self.collided == 0)[0]]
         self.plotter.scatter(self.atoms[:,0], self.atoms[:,1], lim, lim, c=0)
         self.plotter.scatter(self.neutrons[:,0], self.neutrons[:,1], lim, lim, redraw=False, s=10, c=1)
-        self.plotter.show_stats(f"Generation: {i+1}, temperature: {self.temperature:.4f}, reactivity: {self.get_reactivity():.4f}")
+        stats = f"Generation: {i+1}, temperature: {self.temperature:.4f}, reactivity: {self.get_reactivity():.4f}"
+        self.plotter.show_stats(stats)
 
     def move_neutrons(self):
         '''Move all neutrons'''
-        self.neutrons += self.speed * np.array([np.cos(self.directions), np.sin(self.directions)]).T
+        direction = np.array([np.cos(self.directions), np.sin(self.directions)]).T
+        self.neutrons += self.speed * direction
 
     def collide(self):
         '''Collision detection'''
-        self.old_neutrons = len(self.neutrons)
+        self.n_old_neutrons = len(self.neutrons)
         new_positions = self.neutrons.copy()
         new_directions = self.directions.copy()
         energy = 0
+
         for i, neutron in enumerate(self.neutrons):
             collidable = self.get_collidable(neutron)
             for index in collidable:
                 if self.norm(self.atoms[index] - neutron) < self.radius:# and self.collided[index] == 0:
                     if np.random.rand() < self.reaction_prob:
-                        dirs = np.random.uniform(-np.pi, np.pi, 2)
-                        poss = np.full((2,2), self.atoms[index]) + 1.1*self.radius*np.array([np.cos(dirs), np.sin(dirs)]).T
+                        dirs = np.random.uniform(0, 2*np.pi, 2)
+                        poss = np.full((2,2), self.atoms[index]) + 1.1 * self.radius * np.array([np.cos(dirs), np.sin(dirs)]).T
                         new_directions = np.append(new_directions, dirs)
                         new_positions = np.append(new_positions, poss, axis=0)
                         dir = np.array([np.cos(self.directions[i]), np.sin(self.directions[i])]).T
                         new_positions[i] = self.atoms[index] + dir * self.radius * 1.1
                         energy += self.COLLISION_ENERGY
-
                         self.collided[index] = 1
+
         self.neutrons = new_positions % self.dim
         self.directions = new_directions
         return energy
     
     def absorb(self):
         '''Control rod absorbtion'''
-        mask = np.random.rand(len(self.neutrons))
-        mask = np.nonzero(mask < self.control_rod_absorb)[0]
+        rand = np.random.rand(len(self.neutrons))
+        mask = np.nonzero(rand < self.control_rod_absorb)[0]
         self.neutrons = np.delete(self.neutrons, mask, axis=0)
         self.directions = np.delete(self.directions, mask)
 
@@ -115,18 +118,19 @@ class PWR:
 
     def adjust_control_rods(self):
         '''Increases likelihood of absorbtion by moving control rods a little'''
-        self.control_rod_absorb = min(self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE, 0.02272)
+        insertion = self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE
+        self.control_rod_absorb = min(insertion, 0.02272)
 
     def get_reactivity(self):
         '''Returns the reactivity'''
-        if self.old_neutrons == 0:
+        if self.n_old_neutrons == 0:
             return 0
         else:
-            return len(self.neutrons) / self.old_neutrons
+            return len(self.neutrons) / self.n_old_neutrons
         
     def norm(self, u):
         '''Length of a vector'''
-        return np.sum(np.sqrt(u.dot(u)))
+        return np.sqrt((u * u).sum())
 
 if __name__ ==  "__main__":
     n = 100
