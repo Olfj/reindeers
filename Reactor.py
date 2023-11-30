@@ -31,6 +31,7 @@ class PWR:
         self.n_old_neutrons = n_neutrons
         self.control_rod_absorb = self.CONTROL_ROD_ABSORB 
         self.plot_data = plot_data
+        self.delta_temp_accumulator = 0
 
     def init_atom_table(self):
         '''Partitions the world. Used to store atoms'''
@@ -109,7 +110,12 @@ class PWR:
 
     def adjust_temperature(self, energy):
         ''''Change in water temperature as a function of fission and flow'''
-        self.temperature = self.BASE_TEMPERATURE + energy / (self.HEAT_CAPACITY * (self.VOLUME - self.FLOW))
+        # TODO: change back to not using accumulator?? Ask Gideon. 
+        old_temp =  self.temperature
+        new_temp = self.BASE_TEMPERATURE + energy / (self.HEAT_CAPACITY * (self.VOLUME - self.FLOW))
+        self.delta_temp_accumulator += (new_temp - old_temp)
+        self.temperature += 0.05 * self.delta_temp_accumulator
+        self.delta_temp_accumulator *= 0.95
         #self.temperature = (self.VOLUME * temp + self.FLOW * self.BASE_TEMPERATURE) / self.VOLUME
 
     def adjust_reaction_prob(self):
@@ -119,7 +125,7 @@ class PWR:
     def adjust_control_rods(self):
         '''Increases likelihood of absorbtion by moving control rods a little'''
         insertion = self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE
-        self.control_rod_absorb = min(insertion, 0.023)#0.02272)
+        self.control_rod_absorb = min(insertion, 0.03)#0.02272)
 
     def get_reactivity(self):
         '''Returns the reactivity'''
