@@ -12,7 +12,7 @@ class PWR:
     CONTROL_ROD_ABSORB = 0.01
     CONTROL_ROD_INSERTION_RATE = 1.0015
 
-    def __init__(self, n, dim, n_neutrons, speed, rng, n_blocks=10):
+    def __init__(self, n, dim, n_neutrons, speed, rng, n_blocks=10, plot=True):
         ''' n_neutrons: number of initial neutrons '''
         self.radius = 0.75
         self.n = n
@@ -30,6 +30,7 @@ class PWR:
         self.temperature = self.BASE_TEMPERATURE
         self.n_old_neutrons = n_neutrons
         self.control_rod_absorb = self.CONTROL_ROD_ABSORB 
+        self.plot = plot
 
     def init_atom_table(self):
         '''Partitions the world. Used to store atoms'''
@@ -51,7 +52,8 @@ class PWR:
         return collidable if collidable else []
 
     def update(self, i):
-        self.plot(i)
+        if self.plot:
+            self.plot(i)
         self.n_old_neutrons = len(self.neutrons)
         self.absorb()
         self.move_neutrons()
