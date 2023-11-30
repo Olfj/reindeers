@@ -1,5 +1,5 @@
 import numpy as np
-from Animator import Animator, Plotter
+from Animator import Plotter
 
 class PWR:
 
@@ -59,7 +59,6 @@ class PWR:
         self.adjust_temperature(energy)
         self.adjust_reaction_prob()
         self.adjust_control_rods()
-
 
     def plot(self, i):
         '''Plots the neutrons and atoms'''
@@ -131,12 +130,3 @@ class PWR:
         '''Length of a vector'''
         return np.sqrt((u * u).sum())
 
-if __name__ ==  "__main__":
-    n = 100
-    dim = 100
-    n_initial_neutrons = 200
-    speed = 1
-    rng = np.random.default_rng(seed=42)
-    pwr = PWR(n, dim, n_initial_neutrons, speed, rng)
-    anim = Animator(pwr.update, interval=25)
-    anim.animate()
