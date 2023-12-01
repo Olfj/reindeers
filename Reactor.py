@@ -5,12 +5,12 @@ class PWR:
 
     COLLISION_ENERGY = 200 * 1.602 * 10e-13
     HEAT_CAPACITY = 4.184
-    BASE_TEMPERATURE = 548
+    BASE_TEMPERATURE = 562
     FLOW = 4.97 * 10e-13
     VOLUME =  59.47 * 10e-13
     REACTION_PROB = 0.85
     CONTROL_ROD_ABSORB = 0.01
-    CONTROL_ROD_INSERTION_RATE = 1.0015
+    CONTROL_ROD_INSERTION_RATE = 1.002
 
     def __init__(self, n, dim, n_neutrons, speed, rng, n_blocks=10, plot_data=True):
         ''' n_neutrons: number of initial neutrons '''
@@ -125,7 +125,7 @@ class PWR:
     def adjust_control_rods(self):
         '''Increases likelihood of absorbtion by moving control rods a little'''
         insertion = self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE
-        self.control_rod_absorb = min(insertion, 0.03)#0.02272)
+        self.control_rod_absorb = min(insertion, 0.022)#0.02272)
 
     def get_reactivity(self):
         '''Returns the reactivity'''
