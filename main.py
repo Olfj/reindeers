@@ -7,7 +7,7 @@ if __name__ ==  "__main__":
     dim = 100
     n_initial_neutrons = 200
     speed = 1
-    rng = np.random.default_rng(seed=42)
-    pwr = PWR(n, dim, n_initial_neutrons, speed, rng)
+    seed = 42
+    pwr = PWR(n, dim, n_initial_neutrons, speed, seed=seed)
     anim = Animator(pwr.update, interval=25)
     anim.animate()

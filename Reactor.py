@@ -12,13 +12,15 @@ class PWR:
     CONTROL_ROD_ABSORB = 0.01
     CONTROL_ROD_INSERTION_RATE = 1.002
 
-    def __init__(self, n, dim, n_neutrons, speed, rng, n_blocks=10, plot_data=True):
+    def __init__(self, n, dim, n_neutrons, speed, absorb_rate=0.022, seed=None, n_blocks=10 , plot_data=True):
         ''' n_neutrons: number of initial neutrons '''
         self.radius = 0.75
         self.n = n
         self.dim = dim
         self.speed = speed
+        self.max_absorb_rate = absorb_rate
         self.block_size = int(dim / n_blocks)
+        rng = np.random.default_rng(seed)
         self.atoms = rng.uniform(0, self.dim, size=(self.n, 2))
         self.collided  = np.zeros((self.n))
         self.neutrons = rng.uniform(0, self.dim, size=(n_neutrons, 2))
@@ -125,7 +127,7 @@ class PWR:
     def adjust_control_rods(self):
         '''Increases likelihood of absorbtion by moving control rods a little'''
         insertion = self.control_rod_absorb * self.CONTROL_ROD_INSERTION_RATE
-        self.control_rod_absorb = min(insertion, 0.022)#0.02272)
+        self.control_rod_absorb = min(insertion, self.max_absorb_rate)#0.02272)
 
     def get_reactivity(self):
         '''Returns the reactivity'''
