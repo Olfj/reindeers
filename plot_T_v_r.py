@@ -13,6 +13,7 @@ n_initial_neutrons = 200
 speed = 1
 rng = np.random.default_rng(seed=42)
 average = 50
+
 pwr = PWR(n, dim, n_initial_neutrons, speed, rng, plot_data=False)
 
 length = 10049
