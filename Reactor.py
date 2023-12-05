@@ -63,7 +63,7 @@ class PWR:
         self.move_neutrons()
         energy = self.collide()
         self.adjust_temperature(energy, i)
-        self.adjust_reaction_prob()
+        self.adjust_reaction_prob(i)
         self.adjust_control_rods()
 
     def plot(self, i):
@@ -114,10 +114,10 @@ class PWR:
     def adjust_temperature(self, energy, i):
         ''''Change in water temperature as a function of fission and flow'''
         new_temp = self.BASE_TEMPERATURE + energy / (self.HEAT_CAPACITY * (self.VOLUME - self.FLOW))
-        self.old_temps[i % self.n_rolling_avg] = new_temp 
+        self.old_temps[i % self.n_rolling_avg] = new_temp
         self.temperature = np.mean(self.old_temps[np.nonzero(self.old_temps > 0)[0]])
 
-    def adjust_reaction_prob(self):
+    def adjust_reaction_prob(self, i):
         '''Adjusts the probability of fission as a function of water temperature'''
         self.reaction_prob = self.REACTION_PROB * self.BASE_TEMPERATURE / self.temperature
 
