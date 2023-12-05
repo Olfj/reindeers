@@ -9,10 +9,12 @@ def run_absorb():
     n_initial_neutrons = 200
     speed = 1
     seed = 42
-    absorb_rates = np.linspace(0, 0.04, 10)
-    epochs = 1000
+    absorb_rates = np.linspace(0, 0.04, 30)
+    epochs = 4000
+    th_epoch = 1000
     max_temperature = 700
-    repetitions = 5
+    max_reactivity = 2
+    repetitions = 1
 
     temperatures = np.zeros(absorb_rates.size)
     reactivities = np.zeros(absorb_rates.size)
@@ -24,20 +26,23 @@ def run_absorb():
             acc_reactivity = 0
             for epoch in tqdm(range(epochs)):
                 model.update(epoch)
-                acc_temperature += model.temperature
-                acc_reactivity += model.get_reactivity()
+                # Discard beginning
+                if epoch >= th_epoch:
+                    acc_temperature += model.temperature
+                    acc_reactivity += model.get_reactivity()
+                # Reached upper reasonable bound
                 if model.temperature > 700:
                     temperatures[i] += max_temperature
-                    reactivities[i] += acc_reactivity / epoch
+                    reactivities[i] += max_reactivity # acc_reactivity / epoch
                     print(f'===for a_rate = {a_rate}===')
                     print(f'Reached Max temperature')
                     break
             else:
+                temperatures[i] += acc_temperature / (epochs-th_epoch)
+                reactivities[i] += acc_reactivity / (epochs-th_epoch)
                 print(f'===for a_rate = {a_rate}===')
-                print(f'T = {acc_temperature/epochs}')
-                print(f'r = {acc_reactivity/epochs}')
-                temperatures[i] += acc_temperature / epochs
-                reactivities[i] += acc_reactivity / epochs
+                print(f'T = {temperatures[i]}')
+                print(f'r = {temperatures[i]}')
                 
     temperatures = temperatures / repetitions
     reactivities = reactivities / repetitions
@@ -50,7 +55,7 @@ def run_absorb():
     ax1.set_xlabel('$A_c$')
     ax1.set_ylabel('T')
     ax2.set_title('Average reactivity/$A_c$')
-    ax2.set_xlabel('$A')
+    ax2.set_xlabel('$A_c$')
     ax2.set_ylabel('$r$')
 
     ax1.scatter(absorb_rates, temperatures)

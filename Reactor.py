@@ -116,9 +116,9 @@ class PWR:
         old_temp =  self.temperature
         new_temp = self.BASE_TEMPERATURE + energy / (self.HEAT_CAPACITY * (self.VOLUME - self.FLOW))
         self.delta_temp_accumulator += (new_temp - old_temp)
-        self.temperature += 0.05 * self.delta_temp_accumulator
-        self.delta_temp_accumulator *= 0.95
-        #self.temperature = (self.VOLUME * temp + self.FLOW * self.BASE_TEMPERATURE) / self.VOLUME
+        # self.temperature += 0.05 * self.delta_temp_accumulator
+        # self.delta_temp_accumulator *= 0.95
+        self.temperature = (self.VOLUME * self.delta_temp_accumulator + self.FLOW * self.BASE_TEMPERATURE) / self.VOLUME
 
     def adjust_reaction_prob(self):
         '''Adjusts the probability of fission as a function of water temperature'''
