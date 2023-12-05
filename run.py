@@ -6,11 +6,11 @@ from Reactor import PWR
 def run_absorb():
     n = 100
     dim = 100
-    n_initial_neutrons = 200
+    n_initial_neutrons = 500
     speed = 1
     seed = 42
-    absorb_rates = np.linspace(0, 0.04, 30)
-    epochs = 4000
+    absorb_rates = np.linspace(0.0, 0.1, 10)
+    epochs = 2000
     th_epoch = 1000
     max_temperature = 700
     max_reactivity = 2
@@ -42,7 +42,7 @@ def run_absorb():
                 reactivities[i] += acc_reactivity / (epochs-th_epoch)
                 print(f'===for a_rate = {a_rate}===')
                 print(f'T = {temperatures[i]}')
-                print(f'r = {temperatures[i]}')
+                print(f'r = {reactivities[i]}')
                 
     temperatures = temperatures / repetitions
     reactivities = reactivities / repetitions
