@@ -33,7 +33,8 @@ class PWR:
         self.n_old_neutrons = n_neutrons
         self.control_rod_absorb = self.CONTROL_ROD_ABSORB 
         self.plot_data = plot_data
-        self.delta_temp_accumulator = 0
+        self.n_rolling_avg = 50
+        self.old_temps = np.zeros((self.n_rolling_avg))
 
     def init_atom_table(self):
         '''Partitions the world. Used to store atoms'''
@@ -61,7 +62,7 @@ class PWR:
         self.absorb()
         self.move_neutrons()
         energy = self.collide()
-        self.adjust_temperature(energy)
+        self.adjust_temperature(energy, i)
         self.adjust_reaction_prob()
         self.adjust_control_rods()
 
@@ -110,15 +111,11 @@ class PWR:
         self.neutrons = np.delete(self.neutrons, mask, axis=0)
         self.directions = np.delete(self.directions, mask)
 
-    def adjust_temperature(self, energy):
+    def adjust_temperature(self, energy, i):
         ''''Change in water temperature as a function of fission and flow'''
-        # TODO: change back to not using accumulator?? Ask Gideon. 
-        old_temp =  self.temperature
         new_temp = self.BASE_TEMPERATURE + energy / (self.HEAT_CAPACITY * (self.VOLUME - self.FLOW))
-        self.delta_temp_accumulator += (new_temp - old_temp)
-        # self.temperature += 0.05 * self.delta_temp_accumulator
-        # self.delta_temp_accumulator *= 0.95
-        self.temperature = (self.VOLUME * self.delta_temp_accumulator + self.FLOW * self.BASE_TEMPERATURE) / self.VOLUME
+        self.old_temps[i % self.n_rolling_avg] = new_temp 
+        self.temperature = np.mean(self.old_temps[np.nonzero(self.old_temps > 0)[0]])
 
     def adjust_reaction_prob(self):
         '''Adjusts the probability of fission as a function of water temperature'''
