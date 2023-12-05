@@ -11,9 +11,8 @@ class PWR:
     REACTION_PROB = 0.85
     CONTROL_ROD_ABSORB = 0.01
     CONTROL_ROD_INSERTION_RATE = 1.002
-    PCM_PER_DEGREE = -0.08 / 100 * 2 # Reactivity change per degree 
 
-    def __init__(self, n, dim, n_neutrons, speed, absorb_rate=0.022, seed=None, n_blocks=10 , plot_data=True, pcm=-0.0008):
+    def __init__(self, n, dim, n_neutrons, speed, absorb_rate=0.022, seed=None, n_blocks=10 , plot_data=True):
         ''' n_neutrons: number of initial neutrons '''
         self.radius = 0.75
         self.n = n
@@ -36,8 +35,6 @@ class PWR:
         self.plot_data = plot_data
         self.n_rolling_avg = 50
         self.old_temps = np.zeros((self.n_rolling_avg))
-        self.pcm = pcm
-
 
     def init_atom_table(self):
         '''Partitions the world. Used to store atoms'''
@@ -122,9 +119,7 @@ class PWR:
 
     def adjust_reaction_prob(self, i):
         '''Adjusts the probability of fission as a function of water temperature'''
-        dtemp = self.temperature - self.old_temps[(i-1) % self.n_rolling_avg]
-        self.reaction_prob = self.reaction_prob * (self.get_reactivity() + self.pcm * dtemp)
-        # self.reaction_prob = self.REACTION_PROB * self.BASE_TEMPERATURE / self.temperature
+        self.reaction_prob = self.REACTION_PROB * self.BASE_TEMPERATURE / self.temperature
 
     def adjust_control_rods(self):
         '''Increases likelihood of absorbtion by moving control rods a little'''

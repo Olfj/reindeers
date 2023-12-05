@@ -9,7 +9,7 @@ def run_absorb():
     n_initial_neutrons = 500
     speed = 1
     seed = 42
-    absorb_rates = np.linspace(0.0, 0.1, 10)
+    absorb_rates = np.linspace(0.01, 0.3, 20)
     epochs = 2000
     th_epoch = 1000
     max_temperature = 700
