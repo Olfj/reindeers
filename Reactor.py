@@ -72,7 +72,7 @@ class PWR:
         atoms = self.atoms[np.nonzero(self.collided == 0)[0]]
         self.plotter.scatter(self.atoms[:,0], self.atoms[:,1], lim, lim, c=0)
         self.plotter.scatter(self.neutrons[:,0], self.neutrons[:,1], lim, lim, redraw=False, s=10, c=1)
-        stats = f"Generation: {i+1}, temperature: {self.temperature:.4f}, reactivity: {self.get_reactivity():.4f}"
+        stats = f"Time step: {i+1}, temperature: {self.temperature:.4f}, reactivity: {self.get_reactivity():.4f}"
         self.plotter.show_stats(stats)
 
     def move_neutrons(self):
