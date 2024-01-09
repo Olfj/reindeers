@@ -62,3 +62,7 @@ for rate in absorption_rates:
         plt.tight_layout()
         plt.savefig('plots/T_v_r/Absorption rate = ' + str(rate) + 'iterations = ' + str(iterations[1]) + '.png', bbox_inches='tight')
         plt.close()
+    
+    plt.plot(reactivities[1000:],temps[1000:])
+    plt.show()
+    plt.close()
